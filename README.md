@@ -1,4 +1,4 @@
-# Final Metadata Reporter for ComfyUI
+# Metadata Reporter for ComfyUI
 A custom ComfyUI node designed to extract and display detailed workflow information from generated or loaded images. This node provides an easy way to view the generation parameters associated with an image directly within the ComfyUI interface.
 
 ## 🌟 Features
