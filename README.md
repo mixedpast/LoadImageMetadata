@@ -1,148 +1,151 @@
-# Metadata Reporter for ComfyUI
-A custom ComfyUI node designed to extract and display detailed workflow information from generated or loaded images. This node provides an easy way to view the generation parameters associated with an image directly within the ComfyUI interface.
+````markdown
+# ComfyUI Metadata Reporter Toolkit
 
-## 🌟 Features
+This repository contains **two interconnected custom nodes** designed to work together in ComfyUI to extract, parse, and display metadata from images—whether freshly generated or loaded from disk.
 
-- **Extract Complete Metadata**: Captures positive/negative prompts, seed, steps, sampler name, model used, LoRAs, and all other metadata embedded in images
-- **Clean Presentation**: Displays formatted metadata text directly within the ComfyUI interface
-- **Multiple Sources**: Works with both images generated in the current workflow AND loaded images from external sources
-- **Save to File**: Option to export metadata as a clean, plain-text file
-- **Smart Detection**: Attempts multiple methods to retrieve metadata for maximum compatibility
-
-## 📋 Requirements
-
-- ComfyUI
-- Python 3.8 or higher
-- PIL/Pillow library (typically included with ComfyUI)
-
-## 💾 Installation
-
-### Method 1: Manual Installation
-
-1. Navigate to your ComfyUI custom nodes directory:
-   ```bash
-   cd ComfyUI/custom_nodes/
-   ```
-
-2. Clone this repository:
-   ```bash
-   git clone https://github.com/mixedpast/LoadImageMetadata.git
-   ```
-
-3. Restart ComfyUI to load the new node.
-
-### Method 2: Using ComfyUI Manager
-
-1. Open ComfyUI
-2. Open the Manager tab
-3. Search for "Final Metadata Reporter"
-4. Click the Install button
-5. Restart ComfyUI
-
-## 🚀 Usage
-
-### Basic Workflow
-
-1. **For Generated Images**:
-   - Create your image generation workflow
-   - Add the "Final Metadata Reporter" node
-   - Connect the output IMAGE from your final generation node to the "image" input
-   - Run your workflow to see the metadata
-
-2. **For Loaded Images**:
-   - Add a "Load Image" node to your workflow
-   - Add the "Final Metadata Reporter" node
-   - Connect the "image" output from Load Image to the "image" input of the reporter
-   - Run your workflow to see the metadata
-
-### Saving Metadata to File
-
-To save the metadata to a text file:
-
-1. Set the "save_to_file" parameter to True
-2. Optionally, customize the "output_filename" parameter
-3. Run your workflow
-4. The metadata will be saved to the ComfyUI output directory
-
-## 📊 Example Output
-
-```
-=== Image Metadata ===
-
-Prompt: portrait of a woman with blue eyes, detailed face, freckles, natural lighting, detailed skin
-Negative Prompt: blurry, bad anatomy, disfigured, poorly drawn face, extra limb, ugly, poorly drawn hands
-Seed: 1234567890
-Steps: 30
-Sampler Name: euler_a
-Model: dreamshaper_8.safetensors
-Cfg Scale: 7.0
-Width: 512
-Height: 768
-
-=== LoRAs ===
-lora_1: more_details:0.6
-lora_2: realistic_lighting:0.4
-
-=== Other Parameters ===
-Clip Skip: 2
-Denoising Strength: 0.7
-Upscaler: ESRGAN_4x
-Version: ComfyUI 1.5.2
-```
-
-## 🔧 How It Works
-
-The Final Metadata Reporter node extracts metadata through several methods:
-
-1. First, it attempts to access the metadata directly from the image tensor object
-2. If unsuccessful, it looks for a filename attribute and reads metadata from the image file
-3. It handles both string and dictionary metadata formats
-4. The extracted metadata is organized into sections (important parameters, LoRAs, and other parameters) and formatted for easy reading
-
-## ⚠️ Compatibility Notes
-
-- Works with most standard ComfyUI workflows and standard nodes
-- Compatible with both PNG and JPEG images (though PNG is recommended for metadata preservation)
-- Some complex workflows with custom nodes may have limited metadata extraction capabilities
-- For best results with loaded images, use images that were originally generated with Stable Diffusion tools that embed metadata (ComfyUI, A1111, etc.)
-
-## 🔍 Troubleshooting
-
-### No Metadata Found
-
-If you see "No metadata found in image":
-
-- Ensure the image was generated with a tool that embeds metadata (ComfyUI, A1111, etc.)
-- Check that the image hasn't been modified or re-saved with a tool that strips metadata
-- Try using a "Load Image With Metadata" node instead of the regular "Load Image" node
-
-### Incomplete Metadata
-
-If you're getting partial metadata:
-
-- Some complex workflows may not properly record all parameters
-- Try using a simpler workflow to generate the image
-- Consider using additional metadata saving extensions like "ComfyUI-SaveImageWithMetaData"
-
-## 🤝 Contributing
-
-Contributions are welcome! If you have improvements or bug fixes:
-
-1. Fork the repository
-2. Create a new branch for your feature
-3. Add your changes
-4. Submit a pull request
-
-## 📜 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgements
-
-- Thanks to the ComfyUI team for creating an amazing platform
-- Inspired by the need for better metadata visualization in AI image generation
-- Built with ❤️ for the AI art community
+- 🔄 `LoadImageWithMetadata`: A smart loader that extracts embedded metadata from PNG images (or their paired `.json` files if needed).
+- 📝 `FinalMetadataReporter`: A flexible reporter node that formats metadata for readable display, including model, prompts, resolution, LoRA, and other key workflow details.
 
 ---
 
-If you find this node useful, please consider starring the repository and sharing it with others!
+## 📦 Included Nodes
+
+### 1. `LoadImageWithMetadata`
+
+Extracts metadata from:
+
+- The most recently saved image
+- A user-specified image file
+- An incoming image input (with embedded metadata)
+
+Returns both an `IMAGE` and a `DICT` containing parsed metadata.
+
+### 2. `FinalMetadataReporter`
+
+Receives metadata as `DICT` input and outputs a cleanly formatted report as a `STRING`, ready for preview or export.
+
+Handles:
+
+- Full workflow JSON parsing
+- Raw image metadata
+- Missing or malformed metadata gracefully
+
+---
+
+## 🔧 Requirements
+
+- ComfyUI
+- Python 3.8+
+- `Pillow` (usually already bundled with ComfyUI)
+
+---
+
+## 💾 Installation
+
+```bash
+cd ComfyUI/custom_nodes/
+git clone https://github.com/your-username/LoadImageMetadata.git
+````
+
+> This repo installs both nodes together. Restart ComfyUI after cloning.
+
+---
+
+## 🚀 Usage
+
+### For Loaded Images:
+
+1. Use the **`LoadImageWithMetadata`** node with:
+
+   * `source_type = file` → to pick a file
+   * or `source_type = direct_input` → to auto-load the most recent PNG
+
+2. Pass its `metadata` output to **`FinalMetadataReporter`**
+
+3. Preview the `metadata_text` string result.
+
+### For Generated Images:
+
+If your workflow outputs an image with embedded metadata:
+
+* You can skip `LoadImageWithMetadata` and pass metadata directly to the reporter (optional, depending on structure).
+
+---
+
+## 📌 Example Workflow
+
+```
+LoadImageWithMetadata
+        ⬇
+   metadata (DICT)
+        ⬇
+FinalMetadataReporter
+        ⬇
+  metadata_text (STRING)
+```
+
+---
+
+## 📍 Why Use Both?
+
+These nodes were built as a **companion pair**:
+
+* `LoadImageWithMetadata` ensures robust metadata extraction, even from older files or PNGs without full prompt info.
+* `FinalMetadataReporter` provides rich formatting, workflow node parsing, LoRA detection, and even ControlNet/IPAdapter summaries.
+
+---
+
+## 🧪 Example Output
+
+```
+--- Workflow Metadata Report ---
+Model: dreamshaper_8.safetensors
+LoRAs:
+  - more_details (Model: 0.6, CLIP: 0.6)
+  - realistic_lighting (Model: 0.4, CLIP: 0.4)
+Resolution: 512x768
+
+Positive Prompt:
+  portrait of a woman with blue eyes, detailed face, freckles, natural lighting, detailed skin
+
+Negative Prompt:
+  (Empty)
+
+--- Sampler Details ---
+Seed: 1234567890
+Steps: 30
+Sampler Name: euler_a
+Cfg: 7.0
+Denoise: 0.7
+Scheduler: ddim
+```
+
+---
+
+## 🙋 Troubleshooting
+
+* **No Metadata Found?**
+
+  * Ensure image was generated in ComfyUI or A1111 with metadata embedded.
+  * Try direct mode in `LoadImageWithMetadata`.
+
+* **Partial Metadata?**
+
+  * The image may have been re-saved, stripping EXIF info.
+  * Look for a `.json` file next to the image.
+
+---
+
+## 🤝 Contributing
+
+PRs and improvements welcome. Open an issue or submit a pull request.
+
+---
+
+## 📜 License
+
+MIT
+
+---
+
+If this toolkit helps your workflow, star the repo or share it with other ComfyUI users!
